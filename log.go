@@ -460,6 +460,7 @@ func Trace(f interface{}, v ...interface{}) {
 
 func formatLog(f interface{}, v ...interface{}) string {
 	var msg string
+	lenArgs := len(v)
 	switch f.(type) {
 	case string:
 		msg = f.(string)
@@ -473,10 +474,16 @@ func formatLog(f interface{}, v ...interface{}) string {
 		} else {
 			str := ""
 			for key, val := range v {
-				if key%2 == 0 {
-					str += fmt.Sprintf("%v=", val)
-				} else {
-					str += fmt.Sprintf("%v  ", val)
+				if key > 0 {
+					if key%2 == 1 {
+						if (key + 1) <= (lenArgs - 1) {
+							str += fmt.Sprintf("%v=", val)
+						} else {
+							str += fmt.Sprintf("%v ", val)
+						}
+					} else {
+						str += fmt.Sprintf("%v ", val)
+					}
 				}
 			}
 			msg = fmt.Sprintf("%v          %v", msg, strings.TrimSpace(str))
@@ -490,10 +497,14 @@ func formatLog(f interface{}, v ...interface{}) string {
 		} else {
 			str := ""
 			for key, val := range v {
-				if key%2 == 0 {
-					str += fmt.Sprintf("%v=", val)
+				if key%2 == 1 {
+					if (key + 1) <= (lenArgs - 1) {
+						str += fmt.Sprintf("%v=", val)
+					} else {
+						str += fmt.Sprintf("%v ", val)
+					}
 				} else {
-					str += fmt.Sprintf("%v    ", val)
+					str += fmt.Sprintf("%v ", val)
 				}
 			}
 			return fmt.Sprintf("%v          %v", msg, strings.TrimSpace(str))
