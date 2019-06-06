@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"github.com/elastic/go-elasticsearch/v6"
 	"github.com/elastic/go-elasticsearch/v6/esapi"
-	"github.com/phjt-go/util/stringutil"
 	"github.com/pkg/errors"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -64,9 +64,11 @@ func (e *elasticLogger) LogWrite(when time.Time, msgText interface{}, level int)
 
 	go func() {
 
+		now := time.Now().UnixNano()
+		dateTime := strconv.FormatInt(now, 10)
 		req := esapi.IndexRequest{
 			Index:      e.Index,
-			DocumentID: stringutil.GetRandString(8),
+			DocumentID: dateTime,
 			Body:       strings.NewReader(msg),
 			Refresh:    "true",
 		}
