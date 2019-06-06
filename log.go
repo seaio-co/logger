@@ -80,11 +80,11 @@ func Register(name string, log Logger) {
 }
 
 type loginfo struct {
-	Time    string
-	Level   string
-	Path    string
-	Name    string
-	Content string
+	Time    string `json:"time"`
+	Level   string `json:"level"`
+	Path    string `json:"path"`
+	Name    string `json:"name"`
+	Content string `json:"content"`
 }
 
 type nameLogger struct {
