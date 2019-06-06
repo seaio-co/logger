@@ -70,7 +70,8 @@ func (e *elasticLogger) LogWrite(when time.Time, msgText interface{}, level int)
 			Body:       strings.NewReader(msg),
 			Refresh:    "true",
 		}
-		req.Do(context.Background(), e.Es)
+		res, _ := req.Do(context.Background(), e.Es)
+		res.Body.Close()
 	}()
 
 	return nil
