@@ -58,6 +58,7 @@ const (
 	AdapterConsole       = "console"             // 控制台输出配置项
 	AdapterFile          = "file"                // 文件输出配置项
 	AdapterConn          = "conn"                // 网络输出配置项
+	AdapterElastic       = "elastic"             // elastic输出配置项
 )
 
 // log provider interface
@@ -124,6 +125,7 @@ type logConfig struct {
 	Console    *consoleLogger `json:"Console,omitempty"`
 	File       *fileLogger    `json:"File,omitempty"`
 	Conn       *connLogger    `json:"Conn,omitempty"`
+	Elastic    *elasticLogger `json:"Elastic,omitempty"`
 }
 
 func init() {
@@ -198,9 +200,20 @@ func (this *LocalLogger) SetLogPathTrim(trimPath string) {
 
 func (this *LocalLogger) writeToLoggers(when time.Time, msg *loginfo, level int) {
 	for _, l := range this.outputs {
+
+		// 远程TCP发送
 		if l.name == AdapterConn {
-			//网络日志，使用json格式发送,此处使用结构体，用于类似ElasticSearch功能检索
 			err := l.LogWrite(when, msg, level)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "unable to WriteMsg to adapter:%v,error:%v\n", l.name, err)
+			}
+			continue
+		}
+
+		// elastic存储
+		if l.name == AdapterElastic {
+			jsonMsg, _ := json.Marshal(msg)
+			err := l.LogWrite(when, string(jsonMsg), level)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "unable to WriteMsg to adapter:%v,error:%v\n", l.name, err)
 			}
@@ -380,6 +393,10 @@ func SetLogger(param ...string) error {
 	if conf.Conn != nil {
 		conn, _ := json.Marshal(conf.Conn)
 		defaultLogger.SetLogger(AdapterConn, string(conn))
+	}
+	if conf.Elastic != nil {
+		elastic, _ := json.Marshal(conf.Elastic)
+		defaultLogger.SetLogger(AdapterElastic, string(elastic))
 	}
 	return nil
 }
