@@ -76,6 +76,7 @@ logger当前支持控制台、文件、网络3种方式适配器输出，可以�
         "reconnectOnMsg":false,     // 发送完每条消息后是否断开网络
     },
    "Elastic": {
+        "open": false,                      // 日志开关
         "addr": "http://127.0.0.1:9200",    // 连接地址
         "index": "endorse",                 // 主键名称相当于库名
         "level": "DEBG"                     // 日志级别
