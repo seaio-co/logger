@@ -18,6 +18,7 @@ type elasticLogger struct {
 	Index    string `json:"index"`
 	Level    string `json:"level"`
 	LogLevel int
+	Open     bool
 	Es       *elasticsearch.Client
 	Mu       sync.RWMutex
 }
@@ -31,6 +32,10 @@ func (e *elasticLogger) Init(jsonConfig string) error {
 	err := json.Unmarshal([]byte(jsonConfig), &e)
 	if err != nil {
 		return err
+	}
+
+	if e.Open == false {
+		return nil
 	}
 
 	if lv, ok := LevelMap[e.Level]; ok {
