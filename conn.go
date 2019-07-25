@@ -23,11 +23,13 @@ type connLogger struct {
 	illNetFlag     bool //网络异常标记
 }
 
+// Init 初始化
 func (c *connLogger) Init(jsonConfig string) error {
+
 	if len(jsonConfig) == 0 {
 		return nil
 	}
-	fmt.Printf("consoleWriter Init:%s\n", jsonConfig)
+
 	err := json.Unmarshal([]byte(jsonConfig), c)
 	if err != nil {
 		return err
@@ -42,6 +44,7 @@ func (c *connLogger) Init(jsonConfig string) error {
 	return nil
 }
 
+// LogWrite 日志写
 func (c *connLogger) LogWrite(when time.Time, msgText interface{}, level int) (err error) {
 	if level > c.LogLevel {
 		return nil
@@ -74,10 +77,10 @@ func (c *connLogger) LogWrite(when time.Time, msgText interface{}, level int) (e
 			c.illNetFlag = true
 		}
 	}
-
 	return
 }
 
+// Destroy 销毁
 func (c *connLogger) Destroy() {
 	if c.innerWriter != nil {
 		c.innerWriter.Close()

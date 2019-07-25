@@ -36,16 +36,6 @@ type fileLogger struct {
 }
 
 // Init file logger with json config.
-// jsonConfig like:
-//	{
-//	"filename":"log/app.log",
-//	"maxlines":10000,
-//	"maxsize":1024,
-//	"daily":true,
-//	"maxdays":15,
-//	"rotate":true,
-//  	"permit":"0600"
-//	}
 func (f *fileLogger) Init(jsonConfig string) error {
 	if len(jsonConfig) == 0 {
 		return nil
@@ -158,6 +148,7 @@ func (f *fileLogger) newFile() error {
 }
 
 func (f *fileLogger) lines() (int, error) {
+
 	fd, err := os.Open(f.Filename)
 	if err != nil {
 		return 0, err
@@ -167,7 +158,6 @@ func (f *fileLogger) lines() (int, error) {
 	buf := make([]byte, 32768) // 32k
 	count := 0
 	lineSep := []byte{'\n'}
-
 	for {
 		c, err := fd.Read(buf)
 		if err != nil && err != io.EOF {
@@ -180,14 +170,12 @@ func (f *fileLogger) lines() (int, error) {
 			break
 		}
 	}
-
 	return count, nil
 }
 
 // new file name like  xx.2013-01-01.001.log
 func (f *fileLogger) createFreshFile(logTime time.Time) error {
-	// file exists
-	// Find the next available number
+
 	num := 1
 	fName := ""
 	rotatePerm, err := strconv.ParseInt(f.PermitMask, 8, 64)
@@ -197,16 +185,16 @@ func (f *fileLogger) createFreshFile(logTime time.Time) error {
 
 	_, err = os.Lstat(f.Filename)
 	if err != nil {
-		// 初始日志文件不存在，无需创建新文件
 		goto RESTART_LOGGER
 	}
-	// 日期变了， 说明跨天，重命名时需要保存为昨天的日期
+
+	// 跨天处理
 	if f.dailyOpenDate != logTime.Day() {
 		for ; err == nil && num <= 999; num++ {
 			fName = f.fileNameOnly + fmt.Sprintf(".%s.%03d%s", f.dailyOpenTime.Format("2006-01-02"), num, f.suffix)
 			_, err = os.Lstat(fName)
 		}
-	} else { //如果仅仅是文件大小或行数达到了限制，仅仅变更后缀序号即可
+	} else { //大小到到限制处理
 		for ; err == nil && num <= 999; num++ {
 			fName = f.fileNameOnly + fmt.Sprintf(".%s.%03d%s", logTime.Format("2006-01-02"), num, f.suffix)
 			_, err = os.Lstat(fName)
@@ -228,7 +216,6 @@ func (f *fileLogger) createFreshFile(logTime time.Time) error {
 		fmt.Fprintf(os.Stderr, "os.Rename %s to %s err:%s\n", f.Filename, fName, err.Error())
 		goto RESTART_LOGGER
 	}
-
 	err = os.Chmod(fName, os.FileMode(rotatePerm))
 
 RESTART_LOGGER:
@@ -268,6 +255,7 @@ func (f *fileLogger) deleteOldLog() {
 	})
 }
 
+// Destroy
 func (f *fileLogger) Destroy() {
 	f.fileWriter.Close()
 }
